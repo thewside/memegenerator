@@ -44,28 +44,47 @@ const reactionOnEmoji = async (reaction) => {
   }
 
   const fetchImage = async (url) => {
-    let imageUrl = null
+    let newUrl = null
+    let count = 0
     try {
       const response = await fetch(url)
       const result = await response.json()
-      // let resultRandom = 0
-      // if(result.results.length > 5) {
-      //   resultRandom = 5
-      // } else {
-      //   resultRandom = result.results.length
-      // }
-      let newUrl = result.results[random(0, result.results.length)]?.img_src
-      const getImage = await fetch(newUrl)
-      
-      const resultImage = await getImage
-      console.log(resultImage.headers.get("content-type").includes("image"))
-      if (resultImage.status === 200) {
-        imageUrl = newUrl
+      const getUrl = () => result.results[random(0, result.results.length)]?.img_src
+      newUrl = getUrl()
+
+      console.log(newUrl, "url created")
+
+      if(!newUrl) {
+        console.log(newUrl, "bad url")
+        count++
+        console.log(count, " retries")
+        newUrl = getUrl()
+      } 
+    
+      if(count >= 3) {
+        console.log(count, " retries and ...stop ")
+        return null
       }
+      console.log("check")
+      const checkImage = async() => {
+        try {
+          const imageResult = await fetch(newUrl)
+          if(imageResult.headers.get("content-type").includes("image")) {
+            return newUrl
+          } else {
+            return null
+          }
+        } catch (error) {
+          return null
+        }
+      }
+      return checkImage()
+
     } catch (error) {
+      console.log(error)
       console.log("fetch error")
     }
-    return imageUrl
+    
   }
 
   const createSvg = async (url) => {
