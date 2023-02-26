@@ -28,7 +28,6 @@ const newBreak = (svg, text, height, fontSize, wordInterval) => {
       .attr("textLength", wordInterval)
       .attr("font-family", "Times New Roman") //Times New Roman
       .text(text)
-      
 }
 
 const reactionOnEmoji = async (reaction) => {
@@ -84,7 +83,6 @@ const reactionOnEmoji = async (reaction) => {
       console.log(error)
       console.log("fetch error")
     }
-    
   }
 
   const createSvg = async (url) => {
@@ -187,15 +185,3 @@ const reactionOnEmoji = async (reaction) => {
 }
 
 module.exports = reactionOnEmoji
-
-{/* 
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" style="fill: black;">
-  <rect x="0" y="0" width="1024" height="768" style="fill: black;"/>
-  <rect x="50" y="50" width="924" height="528" style="fill: white;"/>
-  <rect x="52" y="52" width="920" height="524" style="fill: black;"/>
-  <image x="52" y="52" href="https://i.imgur.com/EYAbIyf.png" width="89.8%" height="68%" "/>
-  <text x="50%" y="680" fill="white" font-size="350%" text-anchor="middle" textLength="127" lengthAdjust="spacingAndGlyphs"> 
-  sample text
-  </text>                                                                                                                     
-</svg>
-*/}
