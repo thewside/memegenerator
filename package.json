@@ -5,5 +5,8 @@
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
     "jsdom": "^21.1.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
