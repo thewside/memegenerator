@@ -1,24 +1,26 @@
+require("dotenv").config();
+console.log(process.env.CLIENT_TOKEN)
 const { Client, Events, GatewayIntentBits, REST, Routes, Partials } = require('discord.js')
-const config = require("./config.json")
-const commands = require("./commands")
+const token = process.env.CLIENT_TOKEN
+// const commands = require("./commands")
 const reactionOnEmoji = require("./tools")
 
 const client = new Client({ 
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], 
   partials: [Partials .Message, Partials.Channel, Partials.Reaction],
 })
-const rest = new REST({ version: '10' }).setToken(config.token);
+const rest = new REST({ version: '10' }).setToken(token);
 
 
-(async () => {
-  try {
-    console.log('Started refreshing application (/) commands.');
-    await rest.put(Routes.applicationCommands("1069689657299832902"), { body: commands });
-    console.log('Successfully reloaded application (/) commands.');
-  } catch (error) {
-    console.error(error);
-  }
-})();
+// (async () => {
+//   try {
+//     console.log('Started refreshing application (/) commands.');
+//     await rest.put(Routes.applicationCommands("1069689657299832902"), { body: commands });
+//     console.log('Successfully reloaded application (/) commands.');
+//   } catch (error) {
+//     console.error(error);
+//   }
+// })();
 
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`)
@@ -58,4 +60,4 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     channel_id.send({ files: [image] });
 })
 
-client.login(config.token)
+client.login(token)
