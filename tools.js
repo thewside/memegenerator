@@ -8,7 +8,7 @@ const dom = new JSDOM(`<!DOCTYPE html><body></body>`)
 const { convert } = require('convert-svg-to-png')
 
 const params = {
-  requiredEmoji: "😁",
+  requiredEmoji: "🔄",
   requiredURL: "https://jsearch.pw/",
   pathname: "searx/search",
   searchOptions: "&categories=images&language=en-EN&format=json",
@@ -31,7 +31,7 @@ const newBreak = (svg, text, height, fontSize, wordInterval) => {
 }
 
 const reactionOnEmoji = async (reaction) => {
-  if(reaction.emoji.name !== params.requiredEmoji) return
+  if(reaction.emoji.reaction._emoji.name !== params.requiredEmoji) return
   const message = await reaction.message.fetch(true)
   if(!message.content) return
   if(message.content === "") return
