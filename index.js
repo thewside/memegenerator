@@ -196,7 +196,6 @@ let timeoutReactUsers = []
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
     if (reaction.message?.author?.id === 1069689657299832902) return
-    if (timeoutBot) return
     if (timeoutReactUsers.includes(user.id)) {
       console.log("cooldown")
       return
