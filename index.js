@@ -10,7 +10,6 @@ const dom = new JSDOM(`<!DOCTYPE html><body></body>`)
 const { convert } = require('convert-svg-to-png')
 const querystring = require("querystring")
 
-
 const params = {
   requiredEmoji: "🔄",
   requiredURL: "https://jsearch.pw/",
