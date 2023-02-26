@@ -6,6 +6,7 @@ const d3n = new D3Node()
 const d3 = d3n.d3
 const dom = new JSDOM(`<!DOCTYPE html><body></body>`)
 const { convert } = require('convert-svg-to-png')
+const querystring = require("querystring")
 
 const params = {
   requiredEmoji: "🔄",
@@ -35,11 +36,10 @@ const reactionOnEmoji = async (reaction) => {
   const message = await reaction.message.fetch(true)
   if(!message.content) return
   if(message.content === "") return
-
   const createURL = (messageContent) => {
     const parseURL = new URL(params.requiredURL)
     parseURL.pathname = params.pathname
-    parseURL.search = "q=" + messageContent + params.searchOptions
+    parseURL.search = "q=" + querystring.stringify({query: messageContent}) + params.searchOptions
     return parseURL.href
   }
 
