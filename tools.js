@@ -38,7 +38,8 @@ const reactionOnEmoji = async (reaction) => {
   const createURL = (messageContent) => {
     const parseURL = new URL(params.requiredURL)
     parseURL.pathname = params.pathname
-    parseURL.search = "q=" + querystring.stringify({query: messageContent}) + params.searchOptions
+    //querystring.stringify()
+    parseURL.search = querystring.stringify({q:`=${messageContent}`}) + params.searchOptions
     return parseURL.href
   }
 
@@ -184,4 +185,4 @@ const reactionOnEmoji = async (reaction) => {
   return await startProcess()
 }
 
-module.exports = reactionOnEmoji
+// module.exports = reactionOnEmoji
