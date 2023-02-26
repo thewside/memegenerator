@@ -44,18 +44,28 @@ const reactionOnEmoji = async (reaction) => {
   }
 
   const fetchImage = async (url) => {
-    const response = await fetch(url)
-    if(!response.ok) return null
-    const result = await response.json()
-    const imageUrl = result.results[random(0, result.results.length)].img_src
-    const getImage = await fetch(imageUrl)
-    if(!getImage.ok) return null
-    const resultImage = await getImage
-    if (resultImage.status === 200) {
-      return imageUrl
-    } else {
-      return null
+    let imageUrl = null
+    try {
+      const response = await fetch(url)
+      const result = await response.json()
+      // let resultRandom = 0
+      // if(result.results.length > 5) {
+      //   resultRandom = 5
+      // } else {
+      //   resultRandom = result.results.length
+      // }
+      let newUrl = result.results[random(0, result.results.length)]?.img_src
+      const getImage = await fetch(newUrl)
+      
+      const resultImage = await getImage
+      console.log(resultImage.headers.get("content-type").includes("image"))
+      if (resultImage.status === 200) {
+        imageUrl = newUrl
+      }
+    } catch (error) {
+      console.log("fetch error")
     }
+    return imageUrl
   }
 
   const createSvg = async (url) => {

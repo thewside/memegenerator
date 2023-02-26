@@ -9,9 +9,8 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], 
   partials: [Partials .Message, Partials.Channel, Partials.Reaction],
 })
-const rest = new REST({ version: '10' }).setToken(token);
 
-
+// const rest = new REST({ version: '10' }).setToken(token);
 // (async () => {
 //   try {
 //     console.log('Started refreshing application (/) commands.');
@@ -32,9 +31,11 @@ client.once(Events.ClientReady, c => {
 
 let timeoutId = null
 let timeoutReactUsers = []
+let timeoutBot = null
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
     if(reaction.message?.author?.id === 1069689657299832902) return
+    if(timeoutBot) return
     if(timeoutReactUsers.includes(user.id)) {
         console.log("cooldown")
         return
@@ -50,14 +51,17 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         timeoutId = null
     }, 5000)
 
+    
     const image = await reactionOnEmoji(reaction)
     const channel_id = client.channels.cache.find((channel) => {
         return channel.id === reaction.message.channelId;
     });
-    
-    timeoutId = null
+
     if(!image) return
-    channel_id.send({ files: [image] });
+    timeoutBot = setTimeout(() => {
+      channel_id.send({ files: [image] });
+      timeoutBot = null
+    }, 1000);
 })
 
 client.login(token)
