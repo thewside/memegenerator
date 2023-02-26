@@ -2,7 +2,6 @@ require("dotenv").config();
 console.log(process.env.CLIENT_TOKEN)
 const { Client, Events, GatewayIntentBits, REST, Routes, Partials } = require('discord.js')
 const token = process.env.CLIENT_TOKEN
-// const commands = require("./commands")
 const reactionOnEmoji = require("./tools")
 
 const client = new Client({ 
@@ -10,24 +9,9 @@ const client = new Client({
   partials: [Partials .Message, Partials.Channel, Partials.Reaction],
 })
 
-// const rest = new REST({ version: '10' }).setToken(token);
-// (async () => {
-//   try {
-//     console.log('Started refreshing application (/) commands.');
-//     await rest.put(Routes.applicationCommands("1069689657299832902"), { body: commands });
-//     console.log('Successfully reloaded application (/) commands.');
-//   } catch (error) {
-//     console.error(error);
-//   }
-// })();
-
 client.once(Events.ClientReady, c => {
     console.log(`Ready! Logged in as ${c.user.tag}`)
 })
-
-// client.on(Events.InteractionCreate, async (interaction) => {
-//     if (!interaction.isChatInputCommand()) return
-// })
 
 let timeoutId = null
 let timeoutReactUsers = []
