@@ -196,7 +196,6 @@ const reactionOnEmoji = async (reactMessage) => {
 }
 
 //bot
-let timeoutReactUsers = []
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
@@ -206,6 +205,7 @@ client.once(Events.ClientReady, c => {
   console.log(`Ready! Logged in as ${c.user.tag}`)
 })
 
+let timeoutReactUsers = []
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
   if (reaction.message?.author?.id === 1069689657299832902) return
   if (timeoutReactUsers.includes(user.id)) {
