@@ -16,10 +16,61 @@ const params = {
   height: 768
 }
 
+const searchNamePosition = (text) => {
+  let tagPosition = [];
+  let count = -1
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] + text[i + 1] === "<@") {
+      tagPosition.push({ start: i, end: 0});
+      count++
+    }
+    if (text[i] === ">") {
+      tagPosition = [
+        ...tagPosition.map(item => {
+          if(item === tagPosition[count]) {
+            return {
+              ...tagPosition[count],
+              end: i
+            }
+          } else {
+            return item
+          }
+        })
+      ]
+    }
+  }
+  return tagPosition
+}
+
+const getName = (userId, guild) => {
+  const member = guild.members.cache.find(member => member.id === userId)
+  if(member?.nickname) return member.nickname + " "
+  return "member "
+}
+
+const replaceIdToName = async (text, guildId) => {
+  const position = searchNamePosition(text)
+  const guild = await client.guilds.fetch(guildId)
+  
+  if(!guild) return text
+
+  if(position.length === 0) return text
+  let id = []
+  let result = text
+  for(let i = 0; i < position.length; i++){
+    id.push(text.slice(position[i].start + 2, position[i].end))
+    result = result.replace(text.slice(position[i].start, position[i].end + 1), getName(id[i], guild))
+  }
+  console.log(id, "id")
+  console.log(result, "result")
+  return result
+}
+
 const sliceTextToParts = (text) => {
   console.log(text, "slicetextparts")
   let textContainer = []
   let letters = ""
+
   for (let i = 0; i < text.length; i++) {
     letters += text[i]
     if (letters.length > 30 && text[i] === " " || letters.length > 40) {
@@ -75,7 +126,6 @@ const validateImage = async (newUrl) => {
   let status = null
   try {
     const imageResult = await fetch(newUrl)
-    console.log(imageResult.headers.get("content-type"))
     if (imageResult.headers.get("content-type").includes("image")) {
       status = newUrl
     }
@@ -181,8 +231,9 @@ const reactionOnEmoji = async (reactMessage) => {
   const message = await reactMessage.message.fetch(true)
   if (!message.content) return
   if (message.content === "") return
+  const messageWithNicknames = await replaceIdToName(message.content, reactMessage.message.guildId)
 
-  const searcherUrl = createUrlFromMessage(message.content)
+  const searcherUrl = createUrlFromMessage(messageWithNicknames)
   console.log("search url")
   const imageUrl = await getUrlImage(searcherUrl)
   if(!imageUrl) return
@@ -190,7 +241,7 @@ const reactionOnEmoji = async (reactMessage) => {
   if(!await validateImage(imageUrl)) return
   console.log("image validated")
 
-  const image = await createImage(imageUrl, message.content)
+  const image = await createImage(imageUrl, messageWithNicknames)
   console.log(image !== null, "image created")
   return image  
 }
@@ -224,6 +275,8 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
   const image = await reactionOnEmoji(reaction)
   const channel_id = client.channels.cache.find(channel => channel.id === (process.env.ID_CHANNEL_POST).toString())
+
+  
   if (!image) return
   console.log("image ready for send")
   channel_id.send({ files: [image] });
