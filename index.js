@@ -228,7 +228,6 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
   if (!image) return
   console.log("image ready for send")
   channel_id.send({ files: [image] });
-  // dom.window.document.querySelector("body").innerHTML = ""
 })
 
 client.login(token)
