@@ -43,14 +43,17 @@ const searchNamePosition = (text) => {
 }
 
 const getName = async (userId, guild) => {
-  const members = await guild.members.fetch()
-  let member = await members.filter(u => u.user.id === userId)
-
+  // const members = await guild.members.cache.fetch()
+  // let member = await members.filter(u => u.user.id === userId)
+  const members = (await guild.members.fetch()).filter(m => m.user.id === userId);
   let memberOptions = null
-  for(let value of member.values()){
+  for(let value of members.values()){
     memberOptions = value
   }
-  return memberOptions.nickname + " " || memberOptions.user.username + " " || "member "
+
+  if(memberOptions.nickname) return memberOptions.nickname + " "
+  if(memberOptions.user.username) return memberOptions.user.username + " "
+  return "member "
 }
 
 const replaceIdToName = async (text, guildId) => {
