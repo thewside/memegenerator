@@ -42,16 +42,20 @@ const searchNamePosition = (text) => {
   return tagPosition
 }
 
-const getName = (userId, guild) => {
-  const member = guild.members.cache.find(member => member.id === userId)
-  if(member?.nickname) return member.nickname + " "
-  return "member "
+const getName = async (userId, guild) => {
+  const members = await guild.members.fetch()
+  let member = await members.filter(u => u.user.id === userId)
+
+  let memberOptions = null
+  for(let value of member.values()){
+    memberOptions = value
+  }
+  return memberOptions.nickname + " " || memberOptions.user.username + " " || "member "
 }
 
 const replaceIdToName = async (text, guildId) => {
   const position = searchNamePosition(text)
-  const guild = await client.guilds.fetch(guildId)
-  
+  const guild = client.guilds.cache.get(guildId)
   if(!guild) return text
 
   if(position.length === 0) return text
@@ -59,7 +63,7 @@ const replaceIdToName = async (text, guildId) => {
   let result = text
   for(let i = 0; i < position.length; i++){
     id.push(text.slice(position[i].start + 2, position[i].end))
-    result = result.replace(text.slice(position[i].start, position[i].end + 1), getName(id[i], guild))
+    result = result.replace(text.slice(position[i].start, position[i].end + 1), await getName(id[i], guild))
   }
   console.log(id, "id")
   console.log(result, "result")
@@ -130,6 +134,7 @@ const validateImage = async (newUrl) => {
       status = newUrl
     }
   } catch (error) {
+    console.log(error)
     console.log("error validation image")
   }
   return status
@@ -226,12 +231,12 @@ const createImage = async (url, message) => {
   return image
 }
 
-const reactionOnEmoji = async (reactMessage) => {
+const reactionOnEmoji = async (reactMessage, guildId) => {
   if (reactMessage.emoji.reaction?._emoji.name !== params.requiredEmoji) return
   const message = await reactMessage.message.fetch(true)
   if (!message.content) return
   if (message.content === "") return
-  const messageWithNicknames = await replaceIdToName(message.content, reactMessage.message.guildId)
+  const messageWithNicknames = await replaceIdToName(message.content, guildId)
 
   const searcherUrl = createUrlFromMessage(messageWithNicknames)
   console.log("search url")
@@ -248,7 +253,7 @@ const reactionOnEmoji = async (reactMessage) => {
 
 //bot
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 })
 
@@ -263,6 +268,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     console.log("cooldown")
     return
   }
+  const guildId = reaction.message.guildId
 
   timeoutReactUsers = [
     ...timeoutReactUsers,
@@ -273,7 +279,8 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     timeoutReactUsers = [...timeoutReactUsers.filter(item => item !== user.id)]
   }, 2000)
 
-  const image = await reactionOnEmoji(reaction)
+
+  const image = await reactionOnEmoji(reaction, guildId)
   const channel_id = client.channels.cache.find(channel => channel.id === (process.env.ID_CHANNEL_POST).toString())
 
   
