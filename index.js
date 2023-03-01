@@ -6,6 +6,9 @@ const { JSDOM } = require('jsdom')
 const D3Node = require('d3-node')
 const { convert } = require('convert-svg-to-png')
 const querystring = require("querystring")
+const {guildsMap} = require("./config.json")
+console.log(guildsMap)
+
 
 const params = {
   requiredEmoji: "🔄",
@@ -43,8 +46,6 @@ const searchNamePosition = (text) => {
 }
 
 const getName = async (userId, guild) => {
-  // const members = await guild.members.cache.fetch()
-  // let member = await members.filter(u => u.user.id === userId)
   const members = (await guild.members.fetch()).filter(m => m.user.id === userId);
   let memberOptions = null
   for(let value of members.values()){
@@ -243,10 +244,22 @@ const reactionOnEmoji = async (reactMessage, guildId) => {
 
   const searcherUrl = createUrlFromMessage(messageWithNicknames)
   console.log("search url")
-  const imageUrl = await getUrlImage(searcherUrl)
+
+  let imageUrl = await getUrlImage(searcherUrl)
   if(!imageUrl) return
+
   console.log("image url created")
-  if(!await validateImage(imageUrl)) return
+
+  let count = 0
+  do {
+    imageUrl = await getUrlImage(searcherUrl)
+    count++
+  }  while (!await validateImage(imageUrl) && count <= 5)
+
+  if(count >= 5) {
+    console.log("error after " + count + " tries")
+    return
+  }
   console.log("image validated")
 
   const image = await createImage(imageUrl, messageWithNicknames)
@@ -265,13 +278,31 @@ client.once(Events.ClientReady, c => {
 })
 
 let timeoutReactUsers = []
+
+
+// до появления db
+/*
+    {
+      "guildsMap": [
+          {
+              "guildId": "..."
+              "channelId": "..."
+          },
+          {
+              "guildId": "...",
+              "channelId": "..."
+          }
+      ]
+    }
+*/
+
+
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
-  if (reaction.message?.author?.id === 1069689657299832902) return
+  if (reaction.message?.author?.id === process.env.BOT_ID) return
   if (timeoutReactUsers.includes(user.id)) {
     console.log("cooldown")
     return
   }
-  const guildId = reaction.message.guildId
 
   timeoutReactUsers = [
     ...timeoutReactUsers,
@@ -282,14 +313,30 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     timeoutReactUsers = [...timeoutReactUsers.filter(item => item !== user.id)]
   }, 2000)
 
-
+  const guildId = reaction.message.guildId
   const image = await reactionOnEmoji(reaction, guildId)
-  const channel_id = client.channels.cache.find(channel => channel.id === (process.env.ID_CHANNEL_POST).toString())
-
-  
   if (!image) return
+
+  let guildChannel = ""
+  for (let i = 0; i < guildsMap.length; i++) {
+    if(guildsMap[i].guildId === guildId) {
+      console.log("channel find")
+      guildChannel = guildsMap[i].channelId
+    }
+  }
+
+  if(guildChannel === "") {
+      console.log("post to reaction channel")
+      guildChannel = reaction.message.channelId
+  }
+
+  console.log(guildId,"guild")
+  console.log(guildChannel, "channel")
+
+  const channel = client.channels.cache.find(channel => channel.id === guildChannel)
+  
   console.log("image ready for send")
-  channel_id.send({ files: [image] });
+  channel.send({ files: [image] })
 })
 
 client.login(token)
